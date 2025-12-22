@@ -26,6 +26,7 @@ This document provides a technical breakdown of the binary Monkey C `.prg` files
 | `0x0F` | DOUBLE | 64-bit IEEE 754 double. |
 | `0x13` | CHAR | 32-bit character code. |
 | `0x14` | BYTE_ARRAY | Offset to a Byte Array object. |
+
 <a name="app-types"></a>
 ### 1.2 App Types
 | Value | Type | 
@@ -76,6 +77,7 @@ Every section in the `.prg` file follows this standard TLV (Type-Length-Value) s
 | 4 | Data section offset for Glance view. |
 | 4 | Code section offset for Glance view. |
 | 4 | Flags Bit 0: Glance Support; Bit 1: Profiling; Bit 2: Sensor Pairing. |
+
 Offsets lower than the BG Offset belong to background processes. Offsets lower than the Glance Offset belong to the glace view. Offsets higher than the BG Offset and Glance Offset belong to the foreground application.
 ### Entry Points (`0x6060C0DE`)
 | Size | Description |
@@ -88,7 +90,6 @@ Offsets lower than the BG Offset belong to background processes. Offsets lower t
 | 4 | Resource ID: App Name |
 | 4 | Resource ID: App Icon |
 | 4 | Flags: `(flags & 0xFF)` is App Type (See [Section 1.2](#app-types)) |
-<a name="data-section"></a>
 ### Data Section (`0xDA7ABABE`)
 Parse sequentially until section end.
 #### ClassDef v1 (`0xC1`)
@@ -103,6 +104,7 @@ Parse sequentially until section end.
 | 2 | App type flags (Bit 15 = Permission Required) |
 | 1 | Fields Count (N). Number of fields/methods in this class. |
 | N*4 | Field Entries  |
+
 **Field Entry (Repeat N times):**
 *   **Field Key (4 bytes):** 
     *   `Key >> 8`: Symbol ID (24 bits)
@@ -119,6 +121,7 @@ Parse sequentially until section end.
 | 2 | AppType (same logic as v1) |
 | 2 | Fields Count (N) |
 | N*5 | Field Entries  |
+
 **Field Entry (Repeat N times):**
 *   **Field Key (4 bytes):** 
     *   `Key >> 8`: Symbol ID (24 bits)
@@ -131,12 +134,15 @@ Parse sequentially until section end.
 | 1 | Tag `0x01` |
 | 2 | Length of the string. |
 | L+1 | Null-terminated string (Length field does not include `0x00`). |
+
+<a name="json-container"></a>
 #### JSON Container (`0x03`)
 | Size | Description |
 | :--- | :--- |
 | 1 | Tag `0x03` |
 | 4 | Container Length (N) |
 | N | Data |
+
 Data can be just an Array (`0xDA7ADA7A`) or an Array with string block (String block `0xABCDABCD` followed by Array `0xDA7ADA7A`)
 **String block (`0xABCDABCD`):**
 | Size | Description |
@@ -144,6 +150,7 @@ Data can be just an Array (`0xDA7ADA7A`) or an Array with string block (String b
 | 4 | Magic `0xABCDABCD` |
 | 4 | Block Length (N) |
 | N | Null-terminated strings one by one |
+
 If the following array has a String (`0x3`) element, it's value will point to an offset inside this string block.
 **Array (`0xDA7ADA7A`):**
 | Size | Description |
@@ -153,6 +160,7 @@ If the following array has a String (`0x3`) element, it's value will point to an
 | 1 | Array Type |
 | 4 | Array Element Count |
 | N | Array Elements |
+
 * Array Types:
    - If `HASH (0x0B)`: Element structure: [Key Type][Key Value][Value Type][Value Value].
    - If `ARRAY (0x05)`: Element structure: [Type][Value]
@@ -208,14 +216,14 @@ A 2D array representing: `[[Int, Int], [Int, Int, Int]]`
 | N*4 | List of Page Sizes 4 bytes each |
 | 4 | Padding Size (M) |
 | M | Null Padding |
-| | **Repeat N times (Ext code offset 0x50000000 starts at the first page):** |
+| **Repeat N times:** | **(Ext code offset 0x50000000 starts at the first page)** |
 | S | Paged Opcode Bytes |
 ---
 ### PC to Line numbers (`0xC0DE7AB1`)
 | Size | Description |
 | :--- | :--- |
 | 2 | Entry Count (N) |
-| | **Repeat N times:** |
+| **Repeat N times:** | |
 | 4 | PC |
 | 4 | File ID |
 | 4 | Symbol ID |
@@ -225,7 +233,7 @@ A 2D array representing: `[[Int, Int], [Int, Int, Int]]`
 | Size | Description |
 | :--- | :--- |
 | 2 | Entry Count (N) |
-| | **Repeat N times:** |
+| **Repeat N times:** | |
 | 4 | Module ID |
 | 4 | Class ID |
 ### Resources (`0xF00D600D`)
@@ -234,9 +242,10 @@ Consists of multiple symbol tables followed by resource containers.
 | Size | Description |
 | :--- | :--- |
 | 2 | Entry Count (N) |
-| | **Repeat N times:** |
+| **Repeat N times:** | |
 | 4 | Symbol ID |
 | 4 | Offset relative to the start of the Resource section |
+
 Uses a 3-tier resolution system.
 #### Tier 1: Top-Level Table (Resource categories)
 *  **Categories (Keys):**
@@ -254,7 +263,7 @@ Each resource container starts with a **Type Byte**:
 *   `0x00`: **Bitmap** (See [Bitmap](bitmap.md))
 *   `0x01`: **String** (Length + Content + 00)
 *   `0x02`: **Font** (See [Font](font.md))
-*   `0x03`: **JSON Container** (See [Data section](#data-section))
+*   `0x03`: **JSON Container** (See [Json Container](#json-container))
 *   `0x04`: **Animation** TODO
 
  **Background Resource (`0xDEFECA7E`):** Contains a Top-level Symbol Table for Background resources with offsets in the Resource Section (`0xF00D600D`).
@@ -266,18 +275,18 @@ Each resource container starts with a **Type Byte**:
 | Size | Description |
 | :--- | :--- |
 | 2 | Entry Count (N) |
-| | **Repeat N times:** |
+| **Repeat N times:** | |
 | 4 | Permission ID |
 ### Exceptions (`0x0ECE7105` / `0xEECE7105`)
 | Size | Description |
 | :--- | :--- |
 | 2 | Entry Count (N) |
-| | **Repeat N times:** |
+| **Repeat N times:** | |
 | 3 | Try Begin Offset relative to the start of the Code section |
 | 3 | Try End Offset relative to the start of the Code section |
 | 3 | Handle Begin Offset relative to the start of the Code section |
 ### Settings (`0x5E771465`)
-Consists of a single serialized Hashmap using the JSON container format (See [Data section](#data-section)).
+Consists of a single serialized Hashmap using the JSON container format (See [Json Container](#json-container)).
 
 ---
 ### Signatures
@@ -288,6 +297,7 @@ Consists of a single serialized Hashmap using the JSON container format (See [Da
 | 512 | RSA Modulus |
 | 4 | RSA Exponent |
 | 512 | SHA256 Signature |
+
 **AppStore Signature (`0x00005161`):**
 | Size | Description |
 | :--- | :--- |

@@ -58,7 +58,9 @@ Pixels are packed into bytes using **Little-Endian Bit Order**.
     *   Pixel 3 ($x=3$): Value `01`
 ### 4.3 Color Translation
 Since these are grayscale alpha masks, the N-bit value must be scaled to 8-bit grayscale for PNG output:
+
 $$ \text{GrayValue} = \frac{\text{PixelValue} \times 255}{2^{\text{BPP}} - 1} $$
+
 *   **1-BPP:** $0=0, 1=255$
 *   **2-BPP:** $0=0, 1=85, 2=170, 3=255$
 ### 4.4 RLE Compression (The "Legacy/Non-GPU" Logic)

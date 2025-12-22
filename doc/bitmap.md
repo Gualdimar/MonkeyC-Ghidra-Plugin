@@ -22,6 +22,7 @@ The header is 21 bytes long, encoded in **Big-Endian** byte order.
 | 0x10 | 2 | Bytes Per Line | Stride (row width in bytes including padding). |
 | 0x12 | 1 | BPP | Bits Per Pixel (1, 2, 4, 8, or 16). |
 | 0x13 | 2 | Palette Count | Number of 4-byte entries in the Transform Map. |
+
 <a name="bitmask-flags"></a>
 ### 2.1 Flags Bitmask Reference
 | Bit | Hex Value | Meaning |
