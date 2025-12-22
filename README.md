@@ -3,7 +3,7 @@
 A Ghidra extension for loading, analyzing, and disassembling Garmin Monkey C binaries (`.prg`).
 
 ![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
-![Ghidra](https://img.shields.io/badge/Ghidra-11.x-green.svg)
+![Ghidra](https://img.shields.io/badge/Ghidra-11.4.x-green.svg)
 
 ## Overview
 
@@ -27,7 +27,7 @@ You can read more about binary structure in the [research documentation](doc/prg
 ## Installation
 
 ### From Release (Recommended)
-1.  Download the latest release zip file from the [Releases](/releases) page.
+1.  Download the latest release zip file from the [Releases](https://github.com/Gualdimar/MonkeyC-Ghidra-Plugin/releases) page.
 2.  Open Ghidra.
 3.  Go to **File** -> **Install Extensions**.
 4.  Click the green **+** icon.
