@@ -1,0 +1,154 @@
+# -------------------------------------------------------------------------
+# Endianness and Alignment
+# -------------------------------------------------------------------------
+define endian=big;
+
+define alignment=1;
+
+# -------------------------------------------------------------------------
+# Spaces and Registers
+# -------------------------------------------------------------------------
+define space ram      type=ram_space      size=4  default;
+define space register type=register_space size=4;
+
+# PC = Program Counter
+# SP = Stack Pointer (Points to top of stack)
+# BP = Base Pointer (Base of current locals)
+# FP = Frame Pointer (Base of current frame)
+define register offset=0x00 size=4 [ PC SP BP FP return_value return_address];
+
+# -------------------------------------------------------------------------
+# Tokens (Instruction Format)
+# -------------------------------------------------------------------------
+# Stack machines uses 8-bit opcodes.
+define token instr(8)
+	op8 = (0,7)
+;
+
+# Arguments following the opcode
+define token imm8_token(8)
+	imm8   = (0,7)
+	imm8_2 = (0,7)
+;
+
+define token imm16_token(16)
+	imm16 = (0,15)
+	rel16 = (0,15) signed
+;
+define token imm24_token(24)
+	imm24 = (0,23)
+;
+
+define token imm32_token(32)
+	imm32   = (0,31)
+	imm32_2 = (0,31)
+	rel32   = (0,31) signed
+;
+
+define token imm64_token(64)
+	imm64 = (0,63)
+;
+
+# -------------------------------------------------------------------------
+# Macros (Stack Logic)
+# -------------------------------------------------------------------------
+# Helper to push a value onto the VM stack
+macro push(val) {
+	SP = SP - 4; # Decrement FIRST (stacks growing down)
+	*:4 SP = val; # Write to new top
+}
+
+# Helper to pop a value from the VM stack
+macro pop(ret) {
+	ret = *:4 SP; # Read from top
+	SP = SP + 4; # Increment AFTER
+}
+
+# -------------------------------------------------------------------------
+# Relative Jump Helpers
+# -------------------------------------------------------------------------
+# Helper for 16-bit relative jumps (goto, bt, bf)
+dest16: target  is rel16 [ target = inst_next + rel16; ] {    
+    export *:4 target;
+}
+
+# -------------------------------------------------------------------------
+# Instructions
+# -------------------------------------------------------------------------
+:nop                  is op8=0x0 { }
+:incsp imm8           is op8=0x1; imm8 { }
+:popv                 is op8=0x2 { }
+:addv                 is op8=0x3 { }
+:subv                 is op8=0x4 { }
+:mulv                 is op8=0x5 { }
+:divv                 is op8=0x6 { }
+:andv                 is op8=0x7 { }
+:orv                  is op8=0x8 { }
+:modv                 is op8=0x9 { }
+:shlv                 is op8=0xa { }
+:shrv                 is op8=0xb { }
+:xorv                 is op8=0xc { }
+:getv                 is op8=0xd { }
+:putv                 is op8=0xe { }
+:invokem imm8         is op8=0xf; imm8 { }
+:agetv                is op8=0x10 { }
+:aputv                is op8=0x11 { }
+:lgetv imm8           is op8=0x12; imm8 { }
+:lputv imm8           is op8=0x13; imm8 { }
+:newa                 is op8=0x14 { }
+:newc                 is op8=0x15 { }
+:return               is op8=0x16 { return [return_address]; }
+:ret                  is op8=0x17 { }
+:news imm32           is op8=0x18; imm32 { }
+:goto dest16          is op8=0x19; dest16 { goto dest16; }
+:eq                   is op8=0x1a { }
+:lt                   is op8=0x1b { }
+:lte                  is op8=0x1c { }
+:gt                   is op8=0x1d { }
+:gte                  is op8=0x1e { }
+:ne                   is op8=0x1f { }
+:isnull               is op8=0x20 { }
+:isa                  is op8=0x21 { }
+:canhazplz            is op8=0x22 { }
+:jsr dest16           is op8=0x23; dest16 { goto dest16; }
+:ts                   is op8=0x24 { }
+:ipush imm32          is op8=0x25; imm32 { }
+:fpush imm32          is op8=0x26; imm32 { }
+:spush imm32          is op8=0x27; imm32 { }
+:bt dest16            is op8=0x28; dest16 { local cond:4; pop(cond); if (cond != 0) goto dest16; }
+:bf dest16            is op8=0x29; dest16 { local cond:4; pop(cond); if (cond == 0) goto dest16; }
+:frpush               is op8=0x2a { }
+:bpush imm8           is op8=0x2b; imm8 { }
+:npush                is op8=0x2c { }
+:invv                 is op8=0x2d { }
+:dup imm8             is op8=0x2e; imm8 { }
+:newd                 is op8=0x2f { }
+:getm                 is op8=0x30 { }
+:lpush imm64          is op8=0x31; imm64 { }
+:dpush imm64          is op8=0x32; imm64 { }
+:throw                is op8=0x33 { }
+:cpush imm32          is op8=0x34; imm32 { }
+:argc imm8            is op8=0x35; imm8 { }
+:newba                is op8=0x36 { }
+:ipushz               is op8=0x37 { }
+:ipush1 imm8          is op8=0x38; imm8 { }
+:ipush2 imm16         is op8=0x39; imm16 { }
+:ipush3 imm24         is op8=0x3a; imm24 { }
+:fpushz               is op8=0x3b { }
+:lpushz               is op8=0x3c { }
+:dpushz               is op8=0x3d { }
+:btpush               is op8=0x3e { }
+:bfpush               is op8=0x3f { }
+:apush imm32          is op8=0x40; imm32 { }
+:bapush imm32         is op8=0x41; imm32 { }
+:hpush imm32          is op8=0x42; imm32 { }
+:getselfv imm32       is op8=0x43; imm32 { }
+:getself              is op8=0x44 { }
+:getmv imm32, imm32_2 is op8=0x45; imm32; imm32_2 { }
+:getlocalv imm8, imm32  is op8=0x46; imm8; imm32 { }
+:getsv imm32          is op8=0x47; imm32 { }
+:invokemz             is op8=0x48 { }
+:aputvdup             is op8=0x49 { }
+:argcincsp imm8, imm8_2  is op8=0x4a; imm8; imm8_2 { }
+:isnotnull            is op8=0x4b { }
+:lgoto imm32          is op8=0x4c; imm32 { goto [imm32:4]; }

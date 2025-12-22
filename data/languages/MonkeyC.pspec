@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<processor_spec>
+    <programcounter register="PC"/>
+
+    <register_data>
+        <register name="PC" group="Control"/>
+        <register name="SP" group="Control"/>
+        <register name="FP" group="Virtual"/>
+		<register name="BP" group="Virtual"/>
+		<register name="return_value" group="Virtual"/>
+		<register name="return_address" group="Virtual"/>
+    </register_data>
+</processor_spec>
