@@ -11,6 +11,8 @@ This plugin adds support for the Monkey C bytecode format used by Garmin Connect
 
 **Note:** This plugin focuses on **Disassembly** and **Static Analysis**. It does not currently implement P-Code semantics for the Decompiler view.
 
+You can read more about binary structure in the [research documentation](doc/prg.md)
+
 ## Features
 
 *   **Automatic Loader:** Automatically detects valid Monkey C (`.prg`) files and loads them into memory.
@@ -25,7 +27,7 @@ This plugin adds support for the Monkey C bytecode format used by Garmin Connect
 ## Installation
 
 ### From Release (Recommended)
-1.  Download the latest release zip file from the [Releases](../../releases) page.
+1.  Download the latest release zip file from the [Releases](/releases) page.
 2.  Open Ghidra.
 3.  Go to **File** -> **Install Extensions**.
 4.  Click the green **+** icon.
