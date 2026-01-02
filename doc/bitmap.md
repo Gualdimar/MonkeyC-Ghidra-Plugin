@@ -4,10 +4,10 @@ This document provides a technical breakdown of the binary bitmap container foun
 ---
 ## 1. Structure Overview
 The bitmap resource is a contiguous binary block consisting of four potential segments:
-1. **Header** (Fixed 21 bytes)
-2. **Transform Map / Palette** (Optional, variable length)
-3. **Pixel Data** (Variable length, potentially compressed)
-4. **Alpha Channel Map** (Optional, 1 byte per pixel)
+1. **Header**: Fixed 21 bytes.
+2. **Transform Map (Mini-Palette)**: Variable length (exists if Palette Count > 0).
+3. **Pixel Data**: Variable length (may be compressed).
+4. **Alpha Channel Map**: Fixed length (exists if Alpha flag is set).
 ---
 ## 2. The Binary Header
 The header is 21 bytes long, encoded in **Big-Endian** byte order.
@@ -29,18 +29,14 @@ The header is 21 bytes long, encoded in **Big-Endian** byte order.
 | :--- | :--- | :--- |
 | 0 | `0x0001` | **Alpha Map Present**: A raw 8-bit alpha map follows pixel data. |
 | 3 | `0x0008` | **Compressed**: Pixel data is compressed using custom LZW(see [Section 5](#lzw-custom)). |
-| 13 | `0x2020` | **Direct Color Palette**: Transform map contains raw color bits (ARGB). |
+| 6 | `0x0040` | **Image Format**: Image is packed in one of this formats: yuv, png, jpg. |
+| 13 | `0x2020` | **Direct Color**: Specific formatting for ARGB2222/ARGB1555. |
 ---
 ## 3. The Transform Map (Mini-Palette)
 If `Palette Count > 0`, this block follows the header. It contains a list of unique colors used in the image.
 *   **Entry Length:** 4 bytes per entry (32-bit Integer).
 *   **Total Length:** `Palette Count * 4` bytes.
-### Color Modes
-The interpretation of the Transform Map depends on the **Direct Color Flag (`0x2020`)**:
-1.  **Hardware Palette Mode** (Flag `0x2020` is **OFF**):
-    The value is an index (0-65) into a device-specific hardware palette (64-color, 14-color, etc.).
-2.  **Direct Color Mode** (Flag `0x2020` is **ON**):
-    The value is a packed color value. If BPP is 1 or 8, these are usually **ARGB2222** (8-bit). If BPP is 16, these are **ARGB1555**.
+*   **Content:** Each entry is a color already encoded into one of the supported Garmin formats (e.g., ARGB2222, RGB565).
 ---
 ## 4. Pixel Data Segment
 Pixel data starts after the Transform Map.
@@ -56,7 +52,8 @@ Pixels are packed **Least Significant Bit (LSB) first**.
 ---
 <a name="lzw-custom"></a>
 ## 5. Compression Algorithm (LZW-Custom)
-If flag `0x0008` is set, the pixel data is compressed. ### Compression Header
+If flag `0x0008` is set, the pixel data is compressed.
+### Compression Header
 1. **Format ID** (1 byte): `0x10`.
 2. **Max Code Width** (1 byte): Usually `8` or `10`.
 3. **Byte Map Count** (1 byte): Number of unique bytes used in the image.
@@ -91,8 +88,7 @@ If flag `0x0001` is set, a raw 8-bit alpha map is appended to the end of the con
 4. For each pixel:
     - Extract raw bits.
     - Look up value in `TransformMap`.
-    - If `Flag 0x2020` is set OR `TransformMap` is null, treat value as **Direct Color**.
-    - If `Flag 0x2020` is unset, treat value as **Hardware Palette Index**.
+    - Decode the bitset into ARGB (e.g., convert `0xFF` ARGB2222 to `0xFFFFFFFF` ARGB8888).
 5. If `Alpha Flag` is set, read final buffer and apply to pixel Alpha channels.
 ---
 ## 9. Legal and Compliance
