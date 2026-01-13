@@ -39,7 +39,7 @@ else if (project.hasProperty("GHIDRA_INSTALL_DIR")) {
 	ghidraInstallDir = project.getProperty("GHIDRA_INSTALL_DIR")
 }
 else {
-	ghidraInstallDir = "C:/Users/admin/Desktop/Files_local/ghidra_11.4.2_PUBLIC"
+	ghidraInstallDir = "/opt/homebrew/Cellar/ghidra/12.0"
 }
 
 task distributeExtension {

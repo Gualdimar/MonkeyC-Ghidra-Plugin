@@ -89,6 +89,11 @@ public class MonkeyCLoader extends AbstractProgramWrapperLoader {
 	}
 
 	@Override
+	protected void load(Program arg0, ImporterSettings arg1) throws CancelledException, IOException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'load'");
+	}
+
 	protected void load(ByteProvider provider, LoadSpec loadSpec, List<Option> options, Program program,
 			TaskMonitor monitor, MessageLog log) throws CancelledException, IOException {
 
@@ -182,8 +187,8 @@ public class MonkeyCLoader extends AbstractProgramWrapperLoader {
 
 	@Override
 	public List<Option> getDefaultOptions(ByteProvider provider, LoadSpec loadSpec, DomainObject domainObject,
-			boolean isLoadIntoProgram) {
-		List<Option> list = super.getDefaultOptions(provider, loadSpec, domainObject, isLoadIntoProgram);
+			boolean isLoadIntoProgram, boolean mirrorsFsLayout) {
+		List<Option> list = super.getDefaultOptions(provider, loadSpec, domainObject, isLoadIntoProgram, mirrorsFsLayout);
 
 		// If this loader has custom options, add them to 'list'
 		list.add(new Option("Option name goes here", "Default option value goes here"));
@@ -200,4 +205,5 @@ public class MonkeyCLoader extends AbstractProgramWrapperLoader {
 
 		return super.validateOptions(provider, loadSpec, options, program);
 	}
+
 }
